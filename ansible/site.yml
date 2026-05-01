@@ -1,0 +1,34 @@
+---
+# =====================================================================
+# Playbook principal. Configura los 3 nodos en orden:
+#   1. Comprobar que SSH funciona (gather_facts default)
+#   2. Aplicar tareas comunes a todo el cluster
+#   3. Instalar k3s server en master
+#   4. Leer el join token del master
+#   5. Instalar k3s agent en workers usando el token
+#
+# Uso (vía Docker, desde la carpeta ansible/):
+#   docker run --rm -it \
+#     -v ~/.ssh:/root/.ssh:ro \
+#     -v $PWD:/work -w /work \
+#     cytopia/ansible:latest-tools \
+#     ansible-playbook site.yml
+# =====================================================================
+
+- name: Tareas comunes en todo el cluster
+  hosts: k3s_cluster
+  become: true
+  roles:
+    - common
+
+- name: Instalar k3s server en el master
+  hosts: k3s_server
+  become: true
+  roles:
+    - k3s_server
+
+- name: Instalar k3s agents en los workers
+  hosts: k3s_agent
+  become: true
+  roles:
+    - k3s_agent

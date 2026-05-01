@@ -1,6 +1,6 @@
 # TODO — siguientes iteraciones
 
-- [ ] **Ansibleizar instalación de k3s**: pasar el bash del README al rol Ansible `ansible/roles/k3s/`. Los manifiestos en `ansible/site.yml` deberían aplicar la misma config que el script bash actual. Esto añade reproducibilidad e idempotencia real.
+- [x] **Ansibleizar instalación de k3s**: rol `ansible/roles/{common,k3s_server,k3s_agent}` con idempotencia. Wrapper `run.sh` para correr vía Docker desde cualquier OS.
 - [ ] **Cloudflare Tunnel**: instalar `cloudflared` como Deployment en el cluster y exponer ArgoCD UI / Apps en `*.juanluismaldonado.dev`.
 - [ ] **App-of-apps pattern**: una sola Application root que vigila `manifests/argocd-apps/` y crea el resto.
 - [ ] **Stack de observabilidad**: kube-prometheus-stack vía Helm + Loki + Grafana dashboards.

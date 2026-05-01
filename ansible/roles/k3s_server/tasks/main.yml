@@ -1,0 +1,64 @@
+---
+# Instala k3s en modo server (control-plane).
+# Idempotente: si ya está instalado, comprueba versión y skip.
+
+- name: Comprobar si k3s ya está instalado
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Comprobar versión actual de k3s (si existe)
+  ansible.builtin.command: /usr/local/bin/k3s --version
+  register: k3s_current_version
+  when: k3s_binary.stat.exists
+  changed_when: false
+  failed_when: false
+
+- name: Instalar k3s server (solo si no está o versión distinta)
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -sfL https://get.k3s.io | \
+      INSTALL_K3S_VERSION="{{ k3s_version }}" \
+      INSTALL_K3S_EXEC="{{ k3s_server_install_args }}" \
+      sh -
+  args:
+    executable: /bin/bash
+  when:
+    - not k3s_binary.stat.exists or k3s_version not in (k3s_current_version.stdout | default(''))
+  register: k3s_install
+  changed_when: k3s_install.rc == 0
+
+- name: Asegurar que el servicio k3s está corriendo
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: true
+
+- name: Esperar a que el API server responda
+  ansible.builtin.wait_for:
+    host: "{{ k3s_server_ip }}"
+    port: "{{ k3s_server_port }}"
+    delay: 2
+    timeout: 120
+
+- name: Leer el node-token del master
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: k3s_token_file
+  no_log: true
+
+- name: Guardar el token como hostvar accesible para workers
+  ansible.builtin.set_fact:
+    k3s_node_token: "{{ k3s_token_file.content | b64decode | trim }}"
+  no_log: true
+
+- name: Mostrar nodos del cluster
+  ansible.builtin.command: kubectl get nodes
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  register: kube_nodes
+  changed_when: false
+
+- name: Output de los nodos
+  ansible.builtin.debug:
+    var: kube_nodes.stdout_lines

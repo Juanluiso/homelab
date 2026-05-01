@@ -1,0 +1,23 @@
+---
+# Variables globales para todos los hosts del cluster.
+
+# Versión exacta de k3s. Cambia para upgrade/downgrade controlado.
+# Lista: https://github.com/k3s-io/k3s/releases
+k3s_version: "v1.35.4+k3s1"
+
+# IP del nodo control-plane. La usan los agents para unirse.
+k3s_server_ip: "192.168.1.110"
+
+# Puerto del API de k3s (default 6443).
+k3s_server_port: 6443
+
+# Flags de instalación del server. Las que pusimos en el bootstrap manual.
+k3s_server_install_args: "--write-kubeconfig-mode 644 --tls-san {{ k3s_server_ip }}"
+
+# Paquetes que queremos en todos los nodos.
+common_packages:
+  - curl
+  - htop
+  - net-tools
+  - vim
+  - ca-certificates

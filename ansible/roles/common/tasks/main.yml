@@ -1,0 +1,32 @@
+---
+# Tareas comunes a todos los nodos del cluster.
+# Solo módulos ansible.builtin (sin dependencias de collections externas).
+
+- name: Actualizar caché APT
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600   # solo si hace más de 1h
+
+- name: Instalar paquetes base
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Asegurar que qemu-guest-agent está activo
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
+
+- name: Configurar zona horaria a Europe/Madrid
+  ansible.builtin.command: timedatectl set-timezone Europe/Madrid
+  changed_when: false   # idempotente; timedatectl no cambia si ya está
+
+- name: Habilitar IPv4 forwarding y bridge netfilter
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/99-k3s.conf
+    content: |
+      net.ipv4.ip_forward = 1
+      net.bridge.bridge-nf-call-iptables = 1
+    mode: "0644"
+  notify: reload sysctl
