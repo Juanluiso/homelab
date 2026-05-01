@@ -1,0 +1,26 @@
+# =====================================================================
+# Copia este archivo a `terraform.tfvars` y rellena tus valores reales.
+# `terraform.tfvars` está en .gitignore — NO se subirá a GitHub.
+# =====================================================================
+
+# --- Proxmox ---
+proxmox_endpoint     = "https://192.168.1.10:8006/"
+proxmox_token_id     = "root@pam!terraform"
+proxmox_token_secret = "PEGA_AQUI_EL_SECRET_UUID"
+proxmox_node         = "proxmox"   # nombre exacto de tu nodo (mira en el panel)
+
+# --- SSH ---
+ssh_private_key_path = "~/.ssh/id_ed25519"
+ssh_public_key       = "ssh-ed25519 AAAAC3Nza... juanlu@equipo"
+
+# --- Storage (confirma con el panel Proxmox → Storage) ---
+storage_pool    = "local-lvm"   # disco de las VMs
+snippet_storage = "local"        # snippets cloud-init
+
+# --- Red ---
+network_gateway = "192.168.1.1"
+
+# --- Usuario por defecto en VMs ---
+cluster_user = "juanlu"
+
+# (resto de defaults: nodos k3s en .110/.111/.112, 2 CPU, 2 GB RAM, 20 GB disco)

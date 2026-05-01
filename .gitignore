@@ -1,0 +1,38 @@
+# Terraform / OpenTofu
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Variables locales con secretos
+terraform.tfvars
+*.auto.tfvars
+.envrc
+.env
+.env.*
+
+# Ansible
+*.retry
+ansible/inventory.yml
+ansible/host_vars/
+ansible/group_vars/all/vault*.yml
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+Thumbs.db
+
+# Llaves privadas
+*.pem
+*.key
+id_rsa
+id_ed25519

@@ -1,0 +1,25 @@
+# Application de ArgoCD: vigila manifests/apps/nginx-demo en este repo
+# y sincroniza automáticamente cualquier cambio.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Juanluiso/homelab.git
+    targetRevision: main
+    path: manifests/apps/nginx-demo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: nginx-demo
+  syncPolicy:
+    automated:
+      prune: true        # borra recursos eliminados del repo
+      selfHeal: true     # corrige cambios manuales (drift)
+    syncOptions:
+      - CreateNamespace=true
