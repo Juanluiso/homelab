@@ -1,0 +1,79 @@
+# Values ajustados para homelab pequeño (~6 GB RAM total).
+# Reducimos retention, recursos y deshabilitamos componentes innecesarios.
+
+# ============ Prometheus ============
+prometheus:
+  prometheusSpec:
+    retention: 7d                  # default: 10d
+    retentionSize: 5GB
+    resources:
+      requests:
+        cpu: 100m
+        memory: 400Mi
+      limits:
+        memory: 800Mi
+    # Storage persistente con local-path (k3s lo trae preinstalado)
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+    # Permitir que detecte ServiceMonitor de cualquier namespace
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+# ============ Grafana ============
+grafana:
+  adminPassword: "homelab-admin"   # cambiar tras primer login
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 2Gi
+  # Datasources: Loki se añadirá automáticamente
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki-stack.monitoring.svc.cluster.local:3100
+      access: proxy
+  # Dashboards extra que ya vienen
+  defaultDashboardsEnabled: true
+
+# ============ Alertmanager ============
+# Lo deshabilitamos de inicio para ahorrar recursos.
+# Cuando quieras alertas en Telegram/Slack, lo habilitas con replicas: 1.
+alertmanager:
+  enabled: false
+
+# ============ Componentes ligeros ============
+nodeExporter:
+  enabled: true
+kubeStateMetrics:
+  enabled: true
+prometheusOperator:
+  resources:
+    requests: { cpu: 50m, memory: 100Mi }
+    limits: { memory: 200Mi }
+
+# ============ Cosas que no usamos en homelab ============
+kubeApiServer:
+  enabled: true
+kubelet:
+  enabled: true
+kubeControllerManager:
+  enabled: false   # k3s no expone esto separado
+kubeScheduler:
+  enabled: false   # idem
+kubeProxy:
+  enabled: false   # k3s usa flannel, no kube-proxy
+kubeEtcd:
+  enabled: false   # k3s usa sqlite, no etcd

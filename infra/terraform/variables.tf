@@ -102,7 +102,7 @@ variable "k3s_master" {
   default = {
     name     = "k3s-master"
     cpu      = 2
-    memory   = 2048
+    memory   = 4096      # 2 GB se queda corto con ArgoCD + observability
     disk_gb  = 20
     ip       = "192.168.1.110"
   }

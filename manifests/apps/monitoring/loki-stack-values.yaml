@@ -1,0 +1,35 @@
+# loki-stack ligero: Loki single-binary + Promtail (DaemonSet de logs)
+# El datasource ya está añadido en Grafana via kube-prometheus-stack values.
+
+loki:
+  enabled: true
+  isDefault: false        # Prometheus es el default datasource en Grafana
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 5Gi
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits:   { memory: 256Mi }
+  config:
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 168h     # 7 días
+
+promtail:
+  enabled: true
+  resources:
+    requests: { cpu: 20m, memory: 64Mi }
+    limits:   { memory: 128Mi }
+
+# Cosas innecesarias para empezar
+fluent-bit:
+  enabled: false
+filebeat:
+  enabled: false
+logstash:
+  enabled: false
+grafana:
+  enabled: false   # ya está instalado por kube-prometheus-stack
+prometheus:
+  enabled: false   # idem
