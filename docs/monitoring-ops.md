@@ -247,27 +247,45 @@ helm upgrade kps prometheus-community/kube-prometheus-stack \
 
 ## Upgrade del chart
 
-Para subir kube-prometheus-stack a una versión más nueva:
+> ⚠️ **Stack gestionado por ArgoCD desde mayo 2026.** No uses `helm upgrade` directo: ArgoCD lo detectaría como drift y revertiría tus cambios.
 
-```bash
-helm repo update
-helm search repo prometheus-community/kube-prometheus-stack -l | head
-# Mira qué versiones hay
+### Cambiar values
 
-helm upgrade kps prometheus-community/kube-prometheus-stack \
-  -n monitoring \
-  -f kube-prometheus-stack-values.yaml \
-  --version 70.0.0   # nueva versión
+1. Edita `manifests/apps/monitoring/kube-prometheus-stack-values.yaml` (o el de Loki)
+2. `git add . && git commit -m "tweak prometheus retention" && git push`
+3. ArgoCD detecta el cambio en su próximo poll (~3 min) y aplica `helm upgrade`
+4. Para forzar inmediato: en la UI → Application → Sync, o:
+   ```bash
+   kubectl -n argocd patch app kube-prometheus-stack --type merge \
+     -p '{"operation": {"sync": {}}}'
+   ```
+
+### Subir versión del chart
+
+Edita `manifests/argocd-apps/kube-prometheus-stack.yaml`:
+
+```yaml
+sources:
+  - chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 70.0.0   # nueva versión
 ```
+
+Y `git push`. ArgoCD baja el chart nuevo y aplica.
 
 > **Antes de upgradear**: lee siempre el CHANGELOG, especialmente cambios de major. Hay versiones que renombran fields del values y rompen.
 
-### Rollback si algo va mal
+### Rollback
 
+Hay dos formas:
+
+**Vía Git (recomendado):** revert del commit que rompió:
 ```bash
-helm history kps -n monitoring
-helm rollback kps 1 -n monitoring   # vuelve a la revisión 1
+git revert HEAD && git push
 ```
+ArgoCD aplica el revert automáticamente.
+
+**Vía ArgoCD UI:** Application → History → seleccionar revisión anterior → Rollback. Esto es manual y no se refleja en Git, así que la próxima sync vuelve al estado roto del repo. Úsalo solo para emergencias breves.
 
 ---
 
@@ -344,38 +362,29 @@ Si tienes ArgoCD vigilando ya un Application, deja que él haga el upgrade en lu
 
 ---
 
-## Cómo migrarlo a GitOps (futuro)
+## GitOps en marcha (estado actual)
 
-Hoy está instalado vía `helm install`. Para que ArgoCD lo gestione:
+El stack está gestionado por ArgoCD desde dos Applications:
+
+- `manifests/argocd-apps/kube-prometheus-stack.yaml`
+- `manifests/argocd-apps/loki-stack.yaml`
+
+Ambas usan **multi-source**: una source apunta al chart oficial (Prometheus Community / Grafana), la otra a este mismo repo (donde están los `values.yaml`). ArgoCD funde los dos al hacer template:
 
 ```yaml
-# manifests/argocd-apps/monitoring.yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: kube-prometheus-stack
-  namespace: argocd
-spec:
-  project: default
-  source:
-    chart: kube-prometheus-stack
+sources:
+  - chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
     targetRevision: 65.5.0
     helm:
+      releaseName: kps
       valueFiles:
         - $values/manifests/apps/monitoring/kube-prometheus-stack-values.yaml
-  sources:
-    - repoURL: https://github.com/Juanluiso/homelab.git
-      targetRevision: main
-      ref: values
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: monitoring
-  syncPolicy:
-    automated: { prune: false, selfHeal: true }
-    syncOptions:
-      - ServerSideApply=true
-      - CreateNamespace=true
+  - repoURL: https://github.com/Juanluiso/homelab.git
+    targetRevision: main
+    ref: values   # alias usado en $values arriba
 ```
 
-**Antes** de aplicar este Application: hacer `helm uninstall kps` para evitar duplicidad. ArgoCD se encargará de la instalación.
+**`prune: false`** está activado a propósito: evita que ArgoCD borre PVCs (datos de Prometheus, dashboards de Grafana, etc.) si quitas algo del chart por accidente. Si necesitas borrar recursos legítimamente, lo haces manualmente.
+
+**`ServerSideApply=true`** en el syncOptions de kube-prometheus-stack: imprescindible porque el CRD `applicationsets.argoproj.io`-style no, pero los CRDs grandes del operator-prometheus tienen el mismo problema de annotations &gt; 256 KB.
