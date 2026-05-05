@@ -1,0 +1,41 @@
+# Loki + Promtail vía ArgoCD multi-source.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  sources:
+    - chart: loki-stack
+      repoURL: https://grafana.github.io/helm-charts
+      targetRevision: 2.10.2
+      helm:
+        releaseName: loki-stack
+        valueFiles:
+          - $values/manifests/apps/monitoring/loki-stack-values.yaml
+
+    - repoURL: https://github.com/Juanluiso/homelab.git
+      targetRevision: main
+      ref: values
+
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m

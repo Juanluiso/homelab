@@ -1,0 +1,46 @@
+# Application multi-source:
+#   - source 1: el chart kube-prometheus-stack del repo de Prometheus Community
+#   - source 2: este mismo repo (valueFiles)
+# Cuando el values.yaml cambia en main, ArgoCD aplica helm upgrade automático.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+
+  sources:
+    - chart: kube-prometheus-stack
+      repoURL: https://prometheus-community.github.io/helm-charts
+      targetRevision: 65.5.0
+      helm:
+        releaseName: kps
+        valueFiles:
+          - $values/manifests/apps/monitoring/kube-prometheus-stack-values.yaml
+
+    - repoURL: https://github.com/Juanluiso/homelab.git
+      targetRevision: main
+      ref: values
+
+  syncPolicy:
+    automated:
+      prune: false        # CUIDADO: prune en stack pesado puede borrar PVCs
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true     # CRDs grandes (igual que ArgoCD bootstrap)
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
