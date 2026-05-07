@@ -105,6 +105,15 @@ config:
             description: Demo desplegado vía GitOps
             icon: nginx.svg
 
+        - Status Page:
+            href: http://uptime-kuma.uptime-kuma.svc.cluster.local:3001/status/homelab
+            description: Status page pública del homelab
+            icon: uptime-kuma.svg
+            widget:
+              type: uptimekuma
+              url: http://uptime-kuma.uptime-kuma.svc.cluster.local:3001
+              slug: homelab
+
     - "Externos":
         - CV:
             href: https://cv.juamluisms.workers.dev

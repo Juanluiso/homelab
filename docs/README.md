@@ -6,6 +6,7 @@
 | [ansible-ops.md](ansible-ops.md) | Manual operativo de Ansible: añadir nodos, upgrade k3s, troubleshooting. |
 | [monitoring-ops.md](monitoring-ops.md) | Manual operativo de Prometheus/Grafana/Loki: dashboards, queries, upgrade. |
 | [homepage-ops.md](homepage-ops.md) | Manual operativo de Homepage: añadir servicios, widgets, secrets, tema. |
+| [uptime-kuma-ops.md](uptime-kuma-ops.md) | Manual operativo de Uptime Kuma: monitores, status page, notificaciones Telegram. |
 
 ## Si estás empezando
 
@@ -23,3 +24,5 @@
 - "Quiero añadir un servicio al dashboard" → [homepage-ops.md § Añadir un servicio nuevo](homepage-ops.md#añadir-un-servicio-nuevo)
 - "Cómo añadir credenciales a Homepage" → [homepage-ops.md § Añadir credenciales](homepage-ops.md#añadir-credenciales)
 - "Generar token API de ArgoCD" → [homepage-ops.md § Token API de ArgoCD](homepage-ops.md#token-api-de-argocd)
+- "Quiero monitorizar un servicio nuevo" → [uptime-kuma-ops.md § Añadir un monitor](uptime-kuma-ops.md#añadir-un-monitor)
+- "Recibir alertas por Telegram" → [uptime-kuma-ops.md § Notificaciones a Telegram](uptime-kuma-ops.md#notificaciones-a-telegram)
