@@ -15,10 +15,12 @@ env:
   - name: HOMEPAGE_ALLOWED_HOSTS
     value: "*"
 
-# Service
+# Service (estructura bjw-s common library del chart 2.x)
 service:
-  type: ClusterIP
-  port: 3000
+  main:
+    ports:
+      http:
+        port: 3000
 
 # Recursos modestos
 resources:
