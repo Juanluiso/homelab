@@ -77,8 +77,9 @@ config:
             widget:
               type: argocd
               url: https://argocd-server.argocd.svc.cluster.local
-              username: "{{HOMEPAGE_VAR_ARGOCD_USERNAME}}"
-              password: "{{HOMEPAGE_VAR_ARGOCD_PASSWORD}}"
+              # API token de la cuenta local 'homepage' (read-only).
+              # Generado vía /api/v1/account/homepage/token con admin.
+              key: "{{HOMEPAGE_VAR_ARGOCD_TOKEN}}"
 
         - Grafana:
             href: http://kps-grafana.monitoring.svc.cluster.local
