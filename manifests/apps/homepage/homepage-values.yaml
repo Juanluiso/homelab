@@ -15,6 +15,13 @@ env:
   - name: HOMEPAGE_ALLOWED_HOSTS
     value: "*"
 
+# Carga las credenciales de servicios externos (Proxmox, ArgoCD, Grafana...)
+# El Secret se crea manualmente: kubectl -n homepage create secret generic
+# homepage-credentials --from-literal=HOMEPAGE_VAR_PROXMOX_TOKEN_ID=...
+envFrom:
+  - secretRef:
+      name: homepage-credentials
+
 # Service (estructura bjw-s common library del chart 2.x)
 service:
   main:
@@ -56,18 +63,40 @@ config:
             href: https://192.168.1.10:8006
             description: Hipervisor (6 cores · 16 GB RAM)
             icon: proxmox.svg
+            widget:
+              type: proxmox
+              url: https://192.168.1.10:8006
+              username: "{{HOMEPAGE_VAR_PROXMOX_TOKEN_ID}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_TOKEN_SECRET}}"
+              node: proxmox
+
         - ArgoCD:
             href: https://argocd-server.argocd.svc.cluster.local
             description: GitOps controller
             icon: argocd.svg
+            widget:
+              type: argocd
+              url: https://argocd-server.argocd.svc.cluster.local
+              username: "{{HOMEPAGE_VAR_ARGOCD_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_ARGOCD_PASSWORD}}"
+
         - Grafana:
             href: http://kps-grafana.monitoring.svc.cluster.local
             description: Dashboards de métricas y logs
             icon: grafana.svg
+            widget:
+              type: grafana
+              url: http://kps-grafana.monitoring.svc.cluster.local
+              username: "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+
         - Prometheus:
             href: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
             description: Métricas en tiempo real
             icon: prometheus.svg
+            widget:
+              type: prometheus
+              url: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
 
     - "Apps":
         - nginx-demo:
