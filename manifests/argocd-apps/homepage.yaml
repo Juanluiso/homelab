@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: homepage
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: homepage
+
+  sources:
+    - chart: homepage
+      repoURL: https://jameswynn.github.io/helm-charts
+      targetRevision: 2.0.4
+      helm:
+        releaseName: homepage
+        valueFiles:
+          - $values/manifests/apps/homepage/homepage-values.yaml
+
+    - repoURL: https://github.com/Juanluiso/homelab.git
+      targetRevision: main
+      ref: values
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m

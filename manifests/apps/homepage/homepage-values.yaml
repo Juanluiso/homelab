@@ -1,0 +1,140 @@
+# Homepage — dashboard del homelab
+# Chart: https://github.com/jameswynn/helm-charts
+
+image:
+  repository: ghcr.io/gethomepage/homepage
+  tag: v0.10.9
+
+# Permitir leer el API de Kubernetes para el widget kubernetes
+enableRbac: true
+serviceAccount:
+  create: true
+
+# Variable que el chart espera para detectar el host
+env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: "*"
+
+# Service
+service:
+  type: ClusterIP
+  port: 3000
+
+# Recursos modestos
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 128Mi
+
+# Config inline (el chart la convierte en ConfigMaps montados)
+config:
+  # ---------------- bookmarks ----------------
+  bookmarks:
+    - Developer:
+        - GitHub:
+            - abbr: GH
+              href: https://github.com/Juanluiso
+    - Docs:
+        - Kubernetes:
+            - abbr: K8s
+              href: https://kubernetes.io/docs/
+        - OpenTofu:
+            - abbr: TF
+              href: https://opentofu.org/docs/
+        - ArgoCD:
+            - abbr: AC
+              href: https://argo-cd.readthedocs.io/
+
+  # ---------------- services ----------------
+  services:
+    - "Infraestructura":
+        - Proxmox:
+            href: https://192.168.1.10:8006
+            description: Hipervisor (6 cores · 16 GB RAM)
+            icon: proxmox.svg
+        - ArgoCD:
+            href: https://argocd-server.argocd.svc.cluster.local
+            description: GitOps controller
+            icon: argocd.svg
+        - Grafana:
+            href: http://kps-grafana.monitoring.svc.cluster.local
+            description: Dashboards de métricas y logs
+            icon: grafana.svg
+        - Prometheus:
+            href: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+            description: Métricas en tiempo real
+            icon: prometheus.svg
+
+    - "Apps":
+        - nginx-demo:
+            href: http://nginx-demo.nginx-demo.svc.cluster.local
+            description: Demo desplegado vía GitOps
+            icon: nginx.svg
+
+    - "Externos":
+        - CV:
+            href: https://cv.juamluisms.workers.dev
+            description: Mi landing personal
+            icon: si-aboutdotme
+        - Rajoyle:
+            href: https://rajoyle.juamluisms.workers.dev
+            description: Juego diario en Cloudflare Workers
+            icon: si-cloudflare
+
+  # ---------------- widgets superiores ----------------
+  widgets:
+    - resources:
+        backend: kubernetes
+        expanded: true
+        cpu: true
+        memory: true
+        label: cluster
+    - search:
+        provider: duckduckgo
+        target: _blank
+    - datetime:
+        text_size: xl
+        format:
+          dateStyle: full
+          timeStyle: short
+          hour12: false
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "k3s-homelab"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+
+  # ---------------- settings ----------------
+  settings:
+    title: "Juanlu — Homelab"
+    favicon: https://www.svgrepo.com/show/376344/server.svg
+    headerStyle: clean
+    target: _blank
+    statusStyle: dot
+    theme: dark
+    color: slate
+    iconStyle: theme
+    fiveColumns: true
+    layout:
+      "Infraestructura":
+        style: row
+        columns: 4
+      "Apps":
+        style: row
+        columns: 4
+      "Externos":
+        style: row
+        columns: 4
+
+  # ---------------- kubernetes integration ----------------
+  kubernetes:
+    mode: cluster
