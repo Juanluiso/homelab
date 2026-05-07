@@ -5,6 +5,7 @@
 | [setup.md](setup.md) | Guía completa de instalación desde cero. Léela primero. |
 | [ansible-ops.md](ansible-ops.md) | Manual operativo de Ansible: añadir nodos, upgrade k3s, troubleshooting. |
 | [monitoring-ops.md](monitoring-ops.md) | Manual operativo de Prometheus/Grafana/Loki: dashboards, queries, upgrade. |
+| [homepage-ops.md](homepage-ops.md) | Manual operativo de Homepage: añadir servicios, widgets, secrets, tema. |
 
 ## Si estás empezando
 
@@ -19,3 +20,6 @@
 - "Cómo upgradear k3s" → [ansible-ops.md § Subir/bajar versión de k3s](ansible-ops.md#subirbajar-versión-de-k3s)
 - "Cómo cambiar la retención de métricas" → [monitoring-ops.md § Cambiar retención](monitoring-ops.md#cambiar-retención)
 - "Cómo activar alertas a Telegram" → [monitoring-ops.md § Activar Alertmanager](monitoring-ops.md#activar-alertmanager)
+- "Quiero añadir un servicio al dashboard" → [homepage-ops.md § Añadir un servicio nuevo](homepage-ops.md#añadir-un-servicio-nuevo)
+- "Cómo añadir credenciales a Homepage" → [homepage-ops.md § Añadir credenciales](homepage-ops.md#añadir-credenciales)
+- "Generar token API de ArgoCD" → [homepage-ops.md § Token API de ArgoCD](homepage-ops.md#token-api-de-argocd)
